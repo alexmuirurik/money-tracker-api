@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\wallet;
+use Carbon\Traits\ToStringFormat;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class WalletController extends Controller
 {
@@ -12,7 +14,8 @@ class WalletController extends Controller
      */
     public function index()
     {
-        //
+        $wallets = wallet::all();
+        return response()->json($wallets);
     }
 
     /**
@@ -28,7 +31,23 @@ class WalletController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required|exists:users,id',
+            'wallet_name' => 'required|string|max:255',
+            'wallet_address' => 'required|string|max:255',
+            'wallet_balance' => 'required', 
+            'wallet_description' => 'nullable',
+        ]);
+
+        if($validator->fails()){
+            return response()->json($validator->errors(), 422);
+        }
+
+        $validatedData = $validator->validated();
+
+        $wallet = Wallet::create($validatedData);
+
+        return response()->json($wallet, 201);
     }
 
     /**
@@ -36,7 +55,10 @@ class WalletController extends Controller
      */
     public function show(wallet $wallet)
     {
-        //
+        return response()->json([
+            'balance' => $wallet->wallet_balance,
+            'transactions' => $wallet->transactions
+        ]);
     }
 
     /**

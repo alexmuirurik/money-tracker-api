@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\user;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 
 use function PHPSTORM_META\map;
 
@@ -32,18 +33,25 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
+        $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
         ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+
+        $validatedData = $validator->validated();
+
         $hashed = Hash::make($validatedData['password']);
         $user = User::create([
             'name' => $validatedData['name'],
             'email' => $validatedData['email'],
             'password' => $hashed,
         ]);
-        return response()->json($user);
+        return response()->json($user, 201);
     }
 
     /**
@@ -51,21 +59,11 @@ class UserController extends Controller
      */
     public function show(user $user)
     {
-        $wallets = $user->wallets.map(function ($wallet) {
-            return [
-                'id' => $wallet->id,
-                'name' => $wallet->wallet_name,
-                'address' => $wallet->wallet_address,
-                'balance' => $wallet->wallet_balance,
-                'description' => $wallet->wallet_description,
-            ];
-        });
-        
         return response()->json([
             'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
-            'wallets' => $wallets,
+            'wallets' => $user->wallets,
             'total_balance' => $user->wallets->sum('wallet_balance'),
         ]);
     }
