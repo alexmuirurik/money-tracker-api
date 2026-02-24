@@ -8,7 +8,9 @@ use Illuminate\Support\Facades\Route;
 Route::group(['prefix' => 'api'], function () {
     // API Routes
     Route::get('/', function () {
-        return 'API is working!';
+        return response()->json([
+            'message' => 'Welcome to the Money Tracker API!',
+        ]);
     });
 
     // User Routes
