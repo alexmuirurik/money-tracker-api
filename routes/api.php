@@ -25,4 +25,3 @@ Route::get('/wallets/{wallet}', [WalletController::class, 'show']);
 // Transaction Routes
 Route::get('/transactions', [TransactionController::class, 'index']);
 Route::post('/transactions', [TransactionController::class, 'store']);
-Route::get('/transactions/{transaction}', [TransactionController::class, 'show']);

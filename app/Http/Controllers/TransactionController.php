@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\transaction;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class TransactionController extends Controller
 {
@@ -12,7 +13,8 @@ class TransactionController extends Controller
      */
     public function index()
     {
-        //
+        $transactions = transaction::all();
+        return response()->json($transactions);
     }
 
     /**
@@ -28,7 +30,22 @@ class TransactionController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'wallet_id' => 'required|exists:wallets,id',
+            'transaction_type' => 'required|in:income,expense',
+            'transaction_amount' => 'required|numeric',
+            'transaction_description' => 'nullable',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+
+        $validatedData = $request->validate();
+
+        $transaction = Transaction::create($validatedData);
+
+        return response()->json($transaction, 201);
     }
 
     /**
