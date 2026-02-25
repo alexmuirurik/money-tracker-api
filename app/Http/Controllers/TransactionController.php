@@ -41,7 +41,7 @@ class TransactionController extends Controller
             return response()->json($validator->errors(), 422);
         }
 
-        $validatedData = $request->validate();
+        $validatedData = $validator->validated();
 
         $transaction = Transaction::create($validatedData);
 
