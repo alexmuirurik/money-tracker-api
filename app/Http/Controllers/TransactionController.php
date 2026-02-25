@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\transaction;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class TransactionController extends Controller
@@ -43,7 +44,15 @@ class TransactionController extends Controller
 
         $validatedData = $validator->validated();
 
-        $transaction = Transaction::create($validatedData);
+        $transaction = DB::transaction(function () use ($validatedData) {
+            $transaction = Transaction::create($validatedData);
+
+            $transaction->wallet()->update([
+                'wallet_balance' => $transaction->transaction_type == 'income' ? $transaction->wallet->wallet_balance + $transaction->transaction_amount : $transaction->wallet->wallet_balance - $transaction->transaction_amount
+            ]);
+
+            return $transaction;
+        });
 
         return response()->json($transaction, 201);
     }
