@@ -63,7 +63,7 @@ class UserController extends Controller
             'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
-            'wallets' => $user->wallets,
+            'wallets' => $user->wallets->select('wallet_name', 'wallet_balance'),
             'total_balance' => $user->wallets->sum('wallet_balance'),
         ]);
     }
